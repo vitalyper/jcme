@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Built-By: spiceworks
+Created-By: Leiningen 1.5.2
+Main-Class: jcmec.core
+

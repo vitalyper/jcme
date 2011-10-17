@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.vitalyper.jcmej</groupId>
+	<artifactId>jcmej</artifactId>
+	<packaging>jar</packaging>
+	<version>0.0.1</version>
+	<name>jcmej</name>
+	<url>http://maven.apache.org</url>
+
+	<developers>
+		<developer>
+			<name>Vitaly Peressada</name>
+		</developer>
+	</developers>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-bundle-jaxrs</artifactId>
+			<version>2.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.2</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>1.7.1</version>
+		</dependency>
+		<!-- Needed for jetty6 use of slf4j -->
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		    <version>1.6.2</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			
+			<!--  
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<outputDirectory>../bin</outputDirectory>
+					<finalName>${project.version}</finalName>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<mainClass>com.vitalyper.jcmej.Main</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			-->
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<archive>
+			            <manifest>
+							<mainClass>com.vitalyper.jcmej.Main</mainClass>
+			            </manifest>
+					</archive>
+				</configuration>
+				<executions>
+				  <execution>
+				    <id>make-assembly</id>
+				    <phase>package</phase> 
+				    <goals>
+				      <goal>single</goal>
+				    </goals>
+				  </execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

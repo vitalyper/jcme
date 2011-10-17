@@ -1,0 +1,6 @@
+.*swp
+.*swo
+.*class
+classes/
+target/
+\.settings/
