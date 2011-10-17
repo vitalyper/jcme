@@ -1,5 +1,6 @@
 # jcme
-The purpose of this project is to compare/contrast java and clojure implementations of naive matching (stock) price engine. 
+The purpose of this project is to compare/contrast java and clojure implementations
+of naive matching (stock) price engine. 
 
 Expected hyposis is that:
 1. java implementation should be a bit faster (2-9 times)
@@ -23,11 +24,11 @@ Expected hyposis is that:
 ## Matching engine requirements
 1. REST JSON interface
     * POST /match
-        * json: orderId (buy (B) | sell (S) plus sequence number), price
+        * json: orderId (B|S plus sequence number), price
     * GET /max/B|S
     * GET /results
     * GET /reset
-2. Support concurrent requests for match and get max buy or sell price.
+2. Support concurrent requests for match and get max buy and sell price.
 3. Return unmatched items.
 4. Reset internal state so matching session can be repeated.
 
@@ -35,12 +36,17 @@ Expected hyposis is that:
 ./run.sh
 
 ## To build and run (if you modified either implementation)
-Make sure maven and leiningen are installed and are on the PATH
+Make sure maven and leiningen are installed and on the PATH
 ./build_run.sh
 
 ## Todo List
 1. Port bash scripts to Windows bat
-2. Collect run statistics: jcmegen will call into public web app which will store and report on run statistics.
-3. Implement scala version
-4. Implement haskell version
+2. Implement scala version
+3. Implement haskell version
+4. Collect run statistics: jcmegen will call into public web app which will store and report on
+run statistics.
 
+## License
+Copyright (C) 2011 Vitaly Peressada
+
+Distributed under the Eclipse Public License, the same as Clojure.
