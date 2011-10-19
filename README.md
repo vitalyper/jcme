@@ -19,6 +19,7 @@ Expected hyposis is that:
 * buid_run.sh - bash script wrapper that invokes build.sh and then run.sh
 * config.clj - input configuration in clojure reader compatible format
 * README.md - this file
+* run.bat - Windows version of run.sh
 * run.sh - invokes main of jcmegen against pre-build jars in bin
 
 ## Matching engine requirements
@@ -34,13 +35,15 @@ Expected hyposis is that:
 
 ## To run
 ./run.sh
+||
+run.bat
 
-## To build and run (if you modified either implementation)
+## To build and run (if you made changes)
 Make sure maven and leiningen are installed and on the PATH
 ./build_run.sh
 
 ## Todo List
-1. Port bash scripts to Windows bat
+1. Port the rest of bash scripts to Windows bat
 2. Implement scala version
 3. Implement haskell version
 4. Collect run statistics: jcmegen will call into public web app which will store and report on

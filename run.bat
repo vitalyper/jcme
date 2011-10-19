@@ -1,5 +1,5 @@
 @echo off
-set ourfile="%0%"
+set ourfile=%0%
 for %%F in (%ourfile%) do set dirname=%%~dpF
 pushd %dirname%
 
@@ -13,9 +13,8 @@ if ERRORLEVEL 9009 (
 )
 goto :EOF
 
-
 :RUN
-sc=jcmegen\src\jcmegen\main.clj 
+set sc=jcmegen\src\jcmegen\main.clj 
 echo Starting clojure script %sc%
 java -cp .\jcmegen\lib\*;.\cmegen\src clojure.main %sc% --input-file config.clj
 
