@@ -30,8 +30,8 @@
 
 (def *env*
   {
-   :java {:results []}
    :clj {:results []}
+   :java {:results []}
    })
 
 (def *processes* '())

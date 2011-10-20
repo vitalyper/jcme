@@ -18,7 +18,7 @@ import org.apache.log4j.PatternLayout;
 
 public class Main {
 	public static final String LOG_FILE = String.format("%s%s",
-			System.getenv("HOME"), "/jcmej.log");
+			getHomeDir(), "/jcmej.log");
 	public static Level LOG_LEVEL = Level.DEBUG;
 	
     static JAXRSServerFactoryBean cxfFctryBean = new JAXRSServerFactoryBean();
@@ -26,7 +26,6 @@ public class Main {
     
     public static void main( String[] args ) throws Exception {
         setupLog4j(LOG_FILE);
-    	redirectStreams(LOG_FILE);
     	
         String url = null;
         if (args.length != 2) {
@@ -74,7 +73,7 @@ public class Main {
      * @return
      */
     static String getHomeDir() {
-    	List<String> envVars = Arrays.asList(new String[] { "HOME", "HOMEPATH" });
+    	List<String> envVars = Arrays.asList(new String[] { "HOME", "USERPROFILE" });
     	for (String v : envVars) {
     		if (System.getenv(v) != null) {
     			return System.getenv(v);
