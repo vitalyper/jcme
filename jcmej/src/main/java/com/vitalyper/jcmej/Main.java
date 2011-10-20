@@ -2,6 +2,8 @@ package com.vitalyper.jcmej;
 
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.cxf.binding.BindingFactoryManager;
 import org.apache.cxf.endpoint.Server;
@@ -65,5 +67,21 @@ public class Main {
     	manager.registerBindingFactory(JAXRSBindingFactory.JAXRS_BINDING_ID, factory);
     	Server server = sf.create();
     	server.start();
+    }
+    
+    /**
+     * Gets home dir in portable way: HOME on *nix, HOMEPATH on windows
+     * @return
+     */
+    static String getHomeDir() {
+    	List<String> envVars = Arrays.asList(new String[] { "HOME", "HOMEPATH" });
+    	for (String v : envVars) {
+    		if (System.getenv(v) != null) {
+    			return System.getenv(v);
+    		}
+    	}
+    	throw new RuntimeException(String.format(
+    		"Could not get home dir from os env vars %s.",
+    		envVars));
     }
 }
