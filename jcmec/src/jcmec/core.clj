@@ -217,8 +217,8 @@
       (printf "Logging to %s.%n" (. appender getFile))
      *logger*))
 (defn get-home-dir []
-  (filter #(not (= nil %1))
-     (map #(System/getenv %1) ["HOME" "HOMEPATH"])))
+  (first (filter #(not (= nil %1))
+     (map #(System/getenv %1) ["HOME" "HOMEPATH"]))))
 
 (defn -main [& args]
   (let [log-fname (str (get-home-dir) "/jcmec.log")]
