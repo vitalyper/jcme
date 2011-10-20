@@ -144,7 +144,6 @@
     (printf "Starting server process %s with jar %s at %s%n" impl jar base-url)
     (start-process jar base-url)
     (printf "Running %d iterations for %s against %s%n" n impl base-url)
-    (.flush *out*)
     (doseq [i (range n)] 
       (jcl/post-seq-multi base-url rand-seq)
       (do
