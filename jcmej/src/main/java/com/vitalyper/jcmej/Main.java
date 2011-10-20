@@ -19,7 +19,7 @@ import org.apache.log4j.PatternLayout;
 public class Main {
 	public static final String LOG_FILE = String.format("%s%s",
 			getHomeDir(), "/jcmej.log");
-	public static Level LOG_LEVEL = Level.DEBUG;
+	public static Level LOG_LEVEL = Level.INFO;
 	
     static JAXRSServerFactoryBean cxfFctryBean = new JAXRSServerFactoryBean();
     static Logger logger = Logger.getLogger(Main.class);
