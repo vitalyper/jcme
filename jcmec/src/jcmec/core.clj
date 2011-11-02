@@ -15,6 +15,7 @@
   (:import 
     [java.io PrintStream FileOutputStream]
     [org.apache.log4j Logger Level PatternLayout Appender DailyRollingFileAppender]
+    [java.net Socket InetAddress DatagramSocket DatagramPacket]
   )
 )
 
@@ -216,19 +217,26 @@
        (.addAppender appender))
       (printf "Logging to %s.%n" (. appender getFile))
      *logger*))
+
 (defn get-home-dir []
   (first (filter #(not (= nil %1))
      (map #(System/getenv %1) ["HOME" "HOMEPATH"]))))
+
+(defn send-start-msg [url udp-port]
+  (let [socket (DatagramSocket.)
+        buf (byte-array (. url getBytes))
+        packet (DatagramPacket. buf (. buf length) (InetAddress/getLocalHost)(Integer/parseInt udp-port))]
+    (with-open [s socket]
+      (.s send packet))
+    (log :info (printf "Sent started msg %s to udp port %s%n" url udp-port))))
 
 (defn -main [& args]
   (let [log-fname (str (get-home-dir) "/jcmec.log")]
     (with-command-line args
       "Agruments spec"
       [[url "Url to listen on" "http://localhost:4211"]
-       [log-file "Log4j file name" log-fname]]
+       [udp-port "Udp port to send start msg to" "42111"]]
         (do
-          (let [ps (PrintStream. (FileOutputStream. log-fname))]
-            (System/setOut ps)
-            (System/setErr ps))
           (setup-log4j {:fname log-fname, :level (:info *log-levels*)})
-          (start-jetty url)))))
+          (start-jetty url)
+          (send-start-msg url udp-port)))))

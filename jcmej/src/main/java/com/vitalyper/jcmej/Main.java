@@ -1,9 +1,16 @@
 package com.vitalyper.jcmej;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.cxf.binding.BindingFactoryManager;
 import org.apache.cxf.endpoint.Server;
@@ -20,29 +27,52 @@ public class Main {
 	public static final String LOG_FILE = String.format("%s%s",
 			getHomeDir(), "/jcmej.log");
 	public static Level LOG_LEVEL = Level.INFO;
-	
     static JAXRSServerFactoryBean cxfFctryBean = new JAXRSServerFactoryBean();
     static Logger logger = Logger.getLogger(Main.class);
     
     public static void main( String[] args ) throws Exception {
         setupLog4j(LOG_FILE);
     	
-        String url = null;
-        if (args.length != 2) {
-        	throw new IllegalArgumentException(String.format("Expecting 2 arguments: --url $url"));
-        }
-        else {
-        	// to be consistent with other implementations process accepts args:
-        	// --url $url
-        	// Also, we won't crazy with arg parsing/validation here
-	        url = args[1];
-        }
-        logger.info(String.format("Starting jcmej via cxf on %s.", url));
+        Map<NamedParams, String> actualParams = parseParams(args);
         
+        if (actualParams.size() != 2) {
+        	throw new IllegalArgumentException(String.format(
+        		"Expecting 4 arguments: --url $url --udp-port $udp-port Got %s.",
+        	    Arrays.asList(args)));
+        }
+        
+        String url = actualParams.get(NamedParams.url);
+        logger.info(String.format("Starting jcmej via cxf on %s.", url));
         startCxf(url, cxfFctryBean);
+        
+        int udpPort = Integer.parseInt(actualParams.get(NamedParams.udpPort));
+        sendStartedMsg(url, udpPort);
     }
     
-    static void redirectStreams(String fileName) throws Exception {
+    private static void sendStartedMsg(String url, int udpPort) throws IOException {
+    	DatagramSocket socket = new DatagramSocket();
+    	InetAddress localAddress = InetAddress.getLocalHost();
+    	byte[] buf = url.getBytes();
+    	
+    	DatagramPacket packet = new DatagramPacket(buf, buf.length, localAddress, udpPort);
+		socket.send(packet);
+		socket.close();
+        logger.info(String.format("Sent started msg %s to udp port %d.", url, udpPort));
+	}
+
+	static Map<NamedParams, String> parseParams(
+			String[] args) {
+		
+		Map<NamedParams, String> out = new TreeMap<NamedParams, String>();
+		for (int i=0; i < args.length; i++) {
+			out.put(NamedParams.fromValue(args[i]), args[i + 1]);
+			i++;
+		}
+		
+		return out;
+	}
+
+	static void redirectStreams(String fileName) throws Exception {
     	PrintStream ps = new PrintStream(new FileOutputStream(fileName));
     	System.setOut(ps);
     	System.setErr(ps);
@@ -69,7 +99,7 @@ public class Main {
     }
     
     /**
-     * Gets home dir in portable way: HOME on *nix, HOMEPATH on windows
+     * Gets home dir in portable way: HOME on *nix, USERPROFILE on windows
      * @return
      */
     static String getHomeDir() {
@@ -83,4 +113,40 @@ public class Main {
     		"Could not get home dir from os env vars %s.",
     		envVars));
     }
+    
+    
+    enum NamedParams {
+    	url("--url"),
+    	udpPort("--udp-port");
+    	
+    	private String value;
+    	NamedParams(String value) {
+    		this.value = value;
+    	}
+    	
+    	public String value() { 
+    		return value; 
+    	}
+    	
+		static NamedParams fromValue(String input) {
+			for (NamedParams np : NamedParams.values()) {
+				// Use case insensitive match
+				if (np.value().equalsIgnoreCase(input)) {
+					return np;
+				}
+			}
+			throw new IllegalArgumentException(String.format(
+				"Expected %s got %s.", 
+				enumValuesToString(), input));
+		}
+		
+	    static List<String> enumValuesToString() {
+	    	List<String> out = new ArrayList<String>();
+	    	for (NamedParams np : NamedParams.values()) {
+	    		out.add(np.value());
+	    	}
+	    	return out;
+	    }
+    }
+    
 }

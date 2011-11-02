@@ -30,8 +30,8 @@
 
 (def *env*
   {
-   :clj {:results []}
    :java {:results []}
+   :clj {:results []}
    })
 
 (def *processes* '())
@@ -116,11 +116,11 @@
         (printf "Failed to connect to %s:%d%n%s%n" host port t)
         false))))
 
-(defn start-process [jar url]
+(defn start-process [jar url udp-port]
   (let [tkns (re-seq #"http://(\w+):(\d+)" url)
         host (first (rest (first tkns)))
         port (Integer/parseInt (last (first tkns)))
-        pb (ProcessBuilder. (into-array ["java" "-jar" (str "bin/" jar) "--url" url]))]
+        pb (ProcessBuilder. (into-array ["java" "-jar" (str "bin/" jar) "--url" url "--udp-port" (String/valueOf udp-port)]))]
     (doto pb
       (.redirectErrorStream true)
       ; use same working dir
@@ -142,11 +142,12 @@
         base-url (:url (impl config))
         jar (:jar (impl config))]
     (printf "Starting server process %s with jar %s at %s%n" impl jar base-url)
-    (start-process jar base-url)
+    (start-process jar base-url (:udp-port config))
     (printf "Running %d iterations for %s against %s%n" n impl base-url)
-    (flush)
+    (.flush *out*)
     (doseq [i (range n)] 
       (jcl/post-seq-multi base-url rand-seq)
+      ;(printf "count of good matches %d%n" (jcl/post-seq-multi base-url rand-seq))
       (do
         (verify-max base-url "b" max-buy)
         (verify-max base-url "s" max-sell)
