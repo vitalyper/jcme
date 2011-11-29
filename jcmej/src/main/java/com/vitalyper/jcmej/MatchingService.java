@@ -1,13 +1,12 @@
 package com.vitalyper.jcmej;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -28,20 +27,16 @@ public class MatchingService {
 	static Gson gson = new Gson();
 	static Logger logger = Logger.getLogger(MatchingService.class);
 	
-	volatile Map<Side, Float> maxBySide = initMax();
-	volatile Map<Float, String> buy = new HashMap<Float, String>();
-	volatile Map<Float, String> sell = new HashMap<Float, String>();
+	static Map<Side, Float> maxBySide = initMax();
+	static Map<Float, String> buy = Collections.synchronizedMap(new HashMap<Float, String>());
+	static Map<Float, String> sell = Collections.synchronizedMap(new HashMap<Float, String>());
 	Stats stats = new Stats();
-	
-	Lock maxLock = new ReentrantLock();
-	Lock buyLock = new ReentrantLock();
-	Lock sellLock = new ReentrantLock();
 	
 	static Map<Side, Float> initMax() {
 		Map<Side, Float> ret = new TreeMap<Side, Float>();
 		ret.put(Side.B, 0.0F);
 		ret.put(Side.S, 0.0F);
-		return ret;
+		return Collections.synchronizedMap(ret);
 	}
 	
 	@Path("/match/")
@@ -95,73 +90,39 @@ public class MatchingService {
 		return Response.ok(gson.toJson(max)).build();
 	}
 	
-	void postMatchInternal(String json) {
+	synchronized void postMatchInternal(String json) {
 		MatchItem matchItem = gson.fromJson(json, MatchItem.class);
 		Side side = Side.fromValue(matchItem.getId().substring(0, 1));
 		
 		float maxFloat = maxBySide.get(side);
 		if (matchItem.getPrice() > maxFloat) {
-			maxLock.lock();
-			try {
-				maxBySide.put(side, matchItem.getPrice());
-			}
-			finally {
-				maxLock.unlock();
-			}
+			maxBySide.put(side, matchItem.getPrice());
 		}
 		
-		Map<Float, String> inMap = new HashMap<Float, String>();
-		Map<Float, String> otherMap = new HashMap<Float, String>();
-		Lock inLock = new ReentrantLock();
-		Lock otherLock = new ReentrantLock();
 		if (side.equals(Side.B)) {
-			inMap = buy;
-			otherMap = sell;
-			inLock = buyLock;
-			otherLock = sellLock;
+			float newVal = matchItem.getPrice();
+			if (!sell.containsKey(newVal)) {
+				buy.put(newVal, matchItem.getId());
+			}
+			// Remove from the other side
+			if (sell.containsKey(newVal)) {
+				sell.remove(newVal);
+			}
 		}
 		else if (side.equals(Side.S)) {
-			inMap = sell;
-			otherMap = buy;
-			inLock = sellLock;
-			otherLock = buyLock;
+			float newVal = matchItem.getPrice();
+			if (!buy.containsKey(newVal)) {
+				sell.put(newVal, matchItem.getId());
+			}
+			// Remove from the other side
+			if (buy.containsKey(newVal)) {
+				buy.remove(newVal);
+			}
 		}
-		updateMaps(matchItem.getPrice(), matchItem.getId(), inMap, otherMap, inLock, otherLock);
 		
 		logger.debug(String.format(
-			"match. side %s, new-float: %f, max-float: %f, in-sz-a: %d, other-sz-a: %d",
-			side, matchItem.getPrice(), maxFloat, inMap.size(), otherMap.size()));
-	}
-	
-	void updateMaps(
-		float newVal, 
-		String id, 
-		Map<Float, String> inMap, 
-		Map<Float, String> otherMap,
-		Lock inLock,
-		Lock otherLock) {
-		
-		// Only add to passed in side if other doesn't have a match
-		if (!otherMap.containsKey(newVal)) {
-			inLock.lock();
-			try {
-				inMap.put(newVal, id);
-			}
-			finally {
-				inLock.unlock();
-			}
-		}
-		
-		// Remove from the other side
-		if (otherMap.containsKey(newVal)) {
-			otherLock.lock();
-			try {
-				otherMap.remove(newVal);
-			}
-			finally {
-				otherLock.unlock();
-			}
-		}
+			"match. side %s, new-float: %f, max-float: %f, buy-map-sz: %d, sell-map-sz-a: %d",
+			side, matchItem.getPrice(), maxFloat, buy.size(), sell.size()));
 	}
 	
 	static enum Side {

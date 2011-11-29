@@ -25,7 +25,7 @@
   [request]
   (let [pc (hcore/pooled-http-client)]
   (-> request
-      ;(hcl/wrap-client ,,, pc)
+      (hcl/wrap-client ,,, pc)
       hcl/wrap-redirects
       hcl/wrap-exceptions
       hcl/wrap-decompression
