@@ -26,7 +26,7 @@ import org.apache.log4j.PatternLayout;
 public class Main {
 	public static final String LOG_FILE = String.format("%s%s",
 			getHomeDir(), "/jcmej.log");
-	public static Level LOG_LEVEL = Level.INFO;
+	public static Level LOG_LEVEL = Level.DEBUG;
     static JAXRSServerFactoryBean cxfFctryBean = new JAXRSServerFactoryBean();
     static Logger logger = Logger.getLogger(Main.class);
     
@@ -50,6 +50,14 @@ public class Main {
     }
     
     private static void sendStartedMsg(String url, int udpPort) throws IOException {
+    	logger.info("Sleeping 2 secs");
+    	try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
     	DatagramSocket socket = new DatagramSocket();
     	InetAddress localAddress = InetAddress.getLocalHost();
     	byte[] buf = url.getBytes();
